@@ -12,6 +12,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<IDapperContext, DapperContext>();
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 

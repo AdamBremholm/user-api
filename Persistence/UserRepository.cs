@@ -1,6 +1,7 @@
 using System.Data;
 using Dapper;
 using UserApi.Models;
+using UserApi.Models.Dto;
 
 namespace UserApi.Persistence;
 
@@ -13,50 +14,52 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<User>> GetAll()
+    public async Task<IEnumerable<UserDto>> GetAll()
     {
-        var query = "SELECT * FROM Users";
+        const string query = @"SELECT Id, FullName, Cdsid FROM Users";
 
         using var connection = _context.CreateConnection();
-        var users = await connection.QueryAsync<User>(query);
+        var users = await connection.QueryAsync<UserDto>(query);
         return users.ToList();
     }
 
-    public async Task<User> Get(int? id)
+    public async Task<UserDto> Get(int? id)
     {
-        var query = "SELECT * FROM Users WHERE Id = @Id";
+        const string query = @"SELECT Id, FullName, Cdsid
+            FROM Users WHERE Id = @Id";
 
         using var connection = _context.CreateConnection();
-        var user = await connection.QuerySingleOrDefaultAsync<User>(query, new { id });
+        var user = await connection.QuerySingleOrDefaultAsync<UserDto>(query, new { id });
         return user;
     }
 
-    public async Task Create(User user)
+    public async Task<UserDto> Create(CreateUserDto user)
     {
-        const string query = "INSERT INTO Users (FullName, Cdsid) VALUES (@FullName, @Cdsid)";
+        const string query = "INSERT INTO Users (FullName, Cdsid) output inserted.Id VALUES (@FullName, @Cdsid) ";
 
         var parameters = new DynamicParameters();
         parameters.Add("FullName", user.FullName, DbType.String);
         parameters.Add("Cdsid", user.Cdsid, DbType.String);
-
         using var connection = _context.CreateConnection();
-        await connection.ExecuteAsync(query, parameters);
+        var insertedId =  connection.QuerySingle<int>(query, parameters);
+        
+        return await Get(insertedId);
     }
 
-    public async Task Update(int id, User user)
+    public async Task<UserDto> Update(int id, UpdateUserDto user)
     {
-        const string query = "INSERT INTO Users (FullName, Cdsid) VALUES (@FullName, @Cdsid WHERE Id = @Id)";
+        const string query = "INSERT INTO Users (FullName, Cdsid)  VALUES (@FullName, @Cdsid WHERE Id = @Id)";
         var parameters = new DynamicParameters();
         parameters.Add("FullName", user.FullName, DbType.String);
         parameters.Add("Cdsid", user.Cdsid, DbType.String);
-
         using var connection = _context.CreateConnection();
         await connection.ExecuteAsync(query, parameters);
+        return await Get(id);
     }
 
     public async Task Delete(int id)
     {
-        var query = "DELETE FROM Users WHERE Id = @Id";
+        const string query = "DELETE FROM Users WHERE Id = @Id";
         using var connection = _context.CreateConnection();
         await connection.ExecuteAsync(query, new { id });
     }
@@ -64,9 +67,9 @@ public class UserRepository : IUserRepository
 
 public interface IUserRepository
 {
-    Task<IEnumerable<User>> GetAll();
-    Task<User> Get(int? id);
-    Task Create(User user);
-    Task Update(int id, User user);
+    Task<IEnumerable<UserDto>> GetAll();
+    Task<UserDto> Get(int? id);
+    Task<UserDto> Create(CreateUserDto user);
+    Task<UserDto> Update(int id, UpdateUserDto user);
     Task Delete(int id);
 }

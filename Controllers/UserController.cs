@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UserApi.Models;
+using UserApi.Models.Dto;
 using UserApi.Services;
 
 namespace UserApi.Controllers;
@@ -20,25 +21,25 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<User>>> GetAll()
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
     {
         return Ok(await _userService.GetAll());
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<User>> Get(int id)
+    public async Task<ActionResult<UserDto>> Get(int id)
     {
         return Ok(await _userService.Get(id));
     }
 
     [HttpPost]
-    public async Task<ActionResult<User>> Create([FromBody] User user)
+    public async Task<ActionResult<User>> Create([FromBody] CreateUserDto user)
     {
         return Ok(await _userService.Create(user));
     }
 
     [HttpPut]
-    public async Task<ActionResult<User>> Update([FromBody] User user)
+    public async Task<ActionResult<User>> Update([FromBody] UpdateUserDto user)
     {
         return Ok(await _userService.Update(user));
     }
