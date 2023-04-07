@@ -1,9 +1,9 @@
 using System.Data;
-using Microsoft.Data.SqlClient;
+using Npgsql;
 
 namespace UserApi.Persistence;
 
-public class DapperContext
+public class DapperContext : IDapperContext
     {
         private readonly IConfiguration _configuration;
         private readonly string _connectionString;
@@ -12,5 +12,9 @@ public class DapperContext
             _configuration = configuration;
             _connectionString = _configuration.GetConnectionString("DefaultConnection");
         }
-        public IDbConnection CreateConnection() => new SqlConnection(_connectionString);
+        public IDbConnection CreateConnection() => new NpgsqlConnection(_connectionString);
     }
+
+public interface IDapperContext {
+    IDbConnection CreateConnection();
+}

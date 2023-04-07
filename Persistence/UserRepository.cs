@@ -6,9 +6,9 @@ namespace UserApi.Persistence;
 
 public class UserRepository : IUserRepository
 {
-    private readonly DapperContext _context;
+    private readonly IDapperContext _context;
 
-    public UserRepository(DapperContext context)
+    public UserRepository(IDapperContext context)
     {
         _context = context;
     }
