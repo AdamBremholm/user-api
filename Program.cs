@@ -13,6 +13,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<IDapperContext, DapperContext>();
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSingleton<ICacheService, CacheService>();
 
 var app = builder.Build();
 
