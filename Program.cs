@@ -16,6 +16,13 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 
+// ensure database and tables exist
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<IDapperContext>();
+    await context.Init();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

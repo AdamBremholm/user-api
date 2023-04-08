@@ -1,3 +1,3 @@
 namespace UserApi.Models.Dto;
 
-public sealed record CreateUserDto(string? FullName, string Cdsid);
+public sealed record CreateUserDto(string? FirstName, string? LastName, string Cdsid);
