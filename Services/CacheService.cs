@@ -27,26 +27,30 @@ public class CacheService : ICacheService
         return value;
     }
 
-    public async Task<T?> GetOrCreateAsync<T>(string key, Func<Task<T>> factory,
-        DistributedCacheEntryOptions? options = default, CancellationToken cancellationToken = default) where T : class
+    public async Task<T?> GetOrCreateAsync<T>(string key, Func<DistributedCacheEntryOptions, Task<T>> factory,
+        CancellationToken cancellationToken = default) where T : class
     {
+        var cacheOptions = new DistributedCacheEntryOptions();
         var value = await GetAsync<T>(key, cancellationToken);
         if (value is not null) return value;
-        value = await factory();
-        await SetAsync(key, value, options, cancellationToken);
+        value = await factory(cacheOptions);
+        await SetAsync(key, value, cacheOptions, cancellationToken);
         return value;
     }
 
-    public async Task SetAsync<T>(string key, T value, DistributedCacheEntryOptions? options = default,
+    public async Task SetAsync<T>(string key, T value,
         CancellationToken cancellationToken = default)
         where T : class
     {
         var cacheValue = JsonSerializer.Serialize(value);
-        if (options is null)
-        {
-            await _distributedCache.SetStringAsync(key, cacheValue, cancellationToken);
-            return;
-        }
+        await _distributedCache.SetStringAsync(key, cacheValue, cancellationToken);
+    }
+
+    public async Task SetAsync<T>(string key, T value, DistributedCacheEntryOptions options,
+        CancellationToken cancellationToken = default)
+        where T : class
+    {
+        var cacheValue = JsonSerializer.Serialize(value);
         await _distributedCache.SetStringAsync(key, cacheValue, options, cancellationToken);
     }
 
@@ -60,9 +64,14 @@ public interface ICacheService
 {
     Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) where T : class;
 
-    Task<T?> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, DistributedCacheEntryOptions? options = default,
+    Task<T?> GetOrCreateAsync<T>(string key, Func<DistributedCacheEntryOptions, Task<T>> factory,
         CancellationToken cancellationToken = default) where T : class;
 
-    Task SetAsync<T>(string key, T value, DistributedCacheEntryOptions? options = default, CancellationToken cancellationToken = default) where T : class;
+    Task SetAsync<T>(string key, T value, DistributedCacheEntryOptions options,
+        CancellationToken cancellationToken = default) where T : class;
+
+    Task SetAsync<T>(string key, T value,
+        CancellationToken cancellationToken = default) where T : class;
+
     Task RemoveAsync(string key, CancellationToken cancellationToken = default);
 }

@@ -25,7 +25,11 @@ public class CachedUserRepository : IUserRepository
     {
         var key = $"user-{id}";
         _cacheService.GetOrCreateAsync<UserDto>(key,
-            async () => await _decorated.Get(id), new DistributedCacheEntryOptions {AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(2)});
+            async (opt) =>
+            {
+                opt.AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(2);
+                return await _decorated.Get(id);
+            });
         return _decorated.Get(id);
     }
 
